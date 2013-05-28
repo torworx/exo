@@ -1,0 +1,23 @@
+{
+  "name": "exo",
+  "version": "0.0.1",
+  "description": "OOP tools for javascript.",
+  "main": "exo.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "~1.10.0",
+    "should": "~1.2.2"
+  },
+  "keywords": [
+    "oop"
+  ],
+  "author": "Tao Yuan",
+  "license": "BSD"
+}
