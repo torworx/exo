@@ -71,6 +71,25 @@
     }
 
     /**
+     * Forward `functions` from `from` to `to`.
+     *
+     * The `this` context of forwarded functions remains bound to the `to` object,
+     * ensuring that property polution does not occur.
+     *
+     * @param {Object} from
+     * @param {Object} to
+     * @param {Array} functions
+     * @api private
+     */
+    function forward(from, to, functions) {
+        for (var i = 0, len = functions.length; i < len; i++) {
+            var method = functions[i];
+            from[method] = to[method].bind(to);
+        }
+    }
+
+
+    /**
      * Merges any number of objects recursively without referencing them or their children.
      *
      *     var torworx = {
@@ -185,6 +204,27 @@
         }
 
         return _clone || item;
+    }
+
+    function bind(fn, context) {
+        var curriedArgs = Array.prototype.slice.call(arguments, 2);
+        if (curriedArgs.length) {
+            return function () {
+                var allArgs = curriedArgs.slice(0);
+                for (var i = 0, n = arguments.length; i < n; ++i) {
+                    allArgs.push(arguments[i]);
+                }
+                fn.apply(context, allArgs);
+            };
+        } else {
+            return createProxy(fn, context);
+        }
+    }
+
+    function createProxy(fn, context) {
+        return function () {
+            fn.apply(context, arguments);
+        }
     }
 
     /**
@@ -360,26 +400,6 @@
                     fn.call(this, a1, a2, a3, a4);
                 };
                 break;
-            case 5:
-                wrapper = function (a1, a2, a3, a4, a5) {
-                    fn.call(this, a1, a2, a3, a4, a5);
-                };
-                break;
-            case 6:
-                wrapper = function (a1, a2, a3, a4, a5, a6) {
-                    fn.call(this, a1, a2, a3, a4, a5, a6);
-                };
-                break;
-            case 7:
-                wrapper = function (a1, a2, a3, a4, a5, a6, a7) {
-                    fn.call(this, a1, a2, a3, a4, a5, a6, a7);
-                };
-                break;
-            case 8:
-                wrapper = function (a1, a2, a3, a4, a5, a6, a7, a8) {
-                    fn.call(this, a1, a2, a3, a4, a5, a6, a7, a8);
-                };
-                break;
             default:
                 wrapper = function () {
                     fn.apply(this, arguments);
@@ -553,8 +573,10 @@
         inherits: inherits,
         apply: apply,
         applyIf: applyIf,
+        forward: forward,
         clone: clone,
         merge: merge,
+        bind: bind,
         chain: chain
     };
 
