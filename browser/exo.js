@@ -14,4 +14,4 @@
             return exo;
         };
     }
-})(this);
+})(global);
