@@ -1,6 +1,6 @@
 {
   "name": "exo",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "oop framework for node and browser.",
   "main": "index.js",
   "directories": {

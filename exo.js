@@ -374,13 +374,13 @@ exo.apply(exo, {
         }
         var parent = parentClass.prototype,
             prototype = exo.chain(parent),
-            body = (isFunction(data) ? data.call(prototype, parent, parentClass) : data) || {},
+            params = (isFunction(data) ? data.call(prototype, parent, parentClass) : data) || {},
             Clazz;
 
-        if (isFunction(body)) {
-            Clazz = body;
-        } else if (body.constructor !== Object) {
-            Clazz = body.constructor;
+        if (isFunction(params)) {
+            Clazz = params;
+        } else if (params.constructor !== Object) {
+            Clazz = params.constructor;
         } else {
             Clazz = makeCtor(parent);
         }
@@ -393,9 +393,15 @@ exo.apply(exo, {
         // the '$superclass' property of class refers to its super class
         exo.obfuscateProperty(Clazz, '$superclass', parentClass);
 
-        if (typeof body === 'object') {
-            exo._extend(Clazz, body, prototype);
-            if (body.$singleton || body.singleton) {
+        if (typeof params === 'object') {
+
+            params.$singleton = params.$singleton || params.singleton;
+            params.$statics = params.$statics || params.statics;
+            params.$mixins = params.$mixins || params.mixins;
+            params.$inherits = params.$inherits || params.inherits;
+
+            exo._extend(Clazz, params, prototype);
+            if (params.$singleton) {
                 Clazz = new Clazz();
             }
         }
@@ -405,9 +411,9 @@ exo.apply(exo, {
 
     _extend: function (targetClass, data, targetPrototype) {
         var prototype = targetPrototype || targetClass.prototype,
-            _statics = data.$statics || data.statics,
-            _mixins = data.$mixins || data.mixins,
-            _inherits = data.$inherits || data.inherits;
+            _statics = data.$statics,
+            _mixins = data.$mixins,
+            _inherits = data.$inherits;
 
         if (_statics) {
             // copy static properties from statics to class
