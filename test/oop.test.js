@@ -1,5 +1,6 @@
-var exo = require("../"),
-    should = require("should");
+var exo = require("../");
+var t = require("chai").assert;
+require("chai").Assertion.includeStack = true;
 
 describe("oop testing", function() {
 
@@ -15,16 +16,15 @@ describe("oop testing", function() {
         });
 
         var a = new A();
-        a.$classname.should.equal('A');
-        a.f.should.equal(1);
-        a.f2.should.equal(2);
-        a.m("s").should.equal("s");
+        t.equal(a.$classname, 'A');
+        t.equal(a.f, 1);
+        t.equal(a.f2, 2);
+        t.equal(a.m("s"), "s");
     });
 
     it('define with extend', function(){
 
-        // OvyJS Define
-        var OvyPerson = exo.define({
+        var ExoPerson = exo.define({
             constructor: function(name) {
                 this.name = name;
             },
@@ -35,73 +35,73 @@ describe("oop testing", function() {
             }
         });
 
-        var OvyChinaGuy = exo.define({
-            extend: OvyPerson,
+        var ExoChinaGuy = exo.define({
+            $extends: ExoPerson,
             constructor: function(name) {
-                OvyChinaGuy.$superclass.call(this, name)
+                ExoChinaGuy.$superclass.call(this, name)
             },
             setAddress: function(city, street) {
-                OvyChinaGuy.$super.setAddress.call(this, 'China', city, street);
+                ExoChinaGuy.$super.setAddress.call(this, 'China', city, street);
             }
         });
 
-        var OvyBeijingLover = exo.define({
-            extend: OvyChinaGuy,
+        var ExoBeijingLover = exo.define({
+            $extends: ExoChinaGuy,
             constructor: function(name) {
-                OvyBeijingLover.$superclass.call(this, name);
+                ExoBeijingLover.$superclass.call(this, name);
             },
             setAddress: function(street) {
-                OvyBeijingLover.$super.setAddress.call(this, 'Beijing', street);
+                ExoBeijingLover.$super.setAddress.call(this, 'Beijing', street);
             }
         });
 
 
-        var p1 = new OvyPerson("Torry");
+        var p1 = new ExoPerson("Torry");
         p1.setAddress("CN", "BJ", "XY");
-        p1.name.should.equal('Torry');
-        p1.country.should.equal('CN');
-        p1.city.should.equal('BJ');
-        p1.street.should.equal('XY');
+        t.equal(p1.name, 'Torry');
+        t.equal(p1.country, 'CN');
+        t.equal(p1.city, 'BJ');
+        t.equal(p1.street, 'XY');
 
-        var p2 = new OvyChinaGuy("Leo");
+        var p2 = new ExoChinaGuy("Leo");
         p2.setAddress("BJ", "XY");
-        p2.name.should.equal('Leo', p2.name);
-        p2.country.should.equal('China');
-        p2.city.should.equal('BJ');
-        p2.street.should.equal('XY');
+        t.equal(p2.name, 'Leo', p2.name);
+        t.equal(p2.country, 'China');
+        t.equal(p2.city, 'BJ');
+        t.equal(p2.street, 'XY');
 
-        var p3 = new OvyBeijingLover("Mary");
+        var p3 = new ExoBeijingLover("Mary");
         p3.setAddress("XY");
-        p3.name.should.equal('Mary');
-        p3.country.should.equal('China');
-        p3.city.should.equal('Beijing');
-        p3.street.should.equal('XY');
+        t.equal(p3.name, 'Mary');
+        t.equal(p3.country, 'China');
+        t.equal(p3.city, 'Beijing');
+        t.equal(p3.street, 'XY');
 
-        var instanceofTest = p3 instanceof OvyBeijingLover &&
-            p3 instanceof OvyChinaGuy &&
-            p3 instanceof OvyPerson;
-        instanceofTest.should.ok;
+        var instanceofTest = p3 instanceof ExoBeijingLover &&
+            p3 instanceof ExoChinaGuy &&
+            p3 instanceof ExoPerson;
+        t.ok(instanceofTest);
     });
 
     it('define with statics', function(){
         var A = exo.define({
-            statics: {
+            $statics: {
                 f: 1,
                 echo: function(msg) {
                     return msg;
                 }
             }
         });
-        A.f.should.equal(1);
-        A.echo('Hello World').should.equal('Hello World');
+        t.equal(A.f, 1);
+        t.equal(A.echo('Hello World'), 'Hello World');
     });
 
     it('define as singleton', function(){
         var A = exo.define({
-            singleton: true,
+            $singleton: true,
             f: 1
         });
-        A.f.should.equal(1);
+        t.equal(A.f, 1);
     });
 
     it('define with private', function(){
@@ -124,15 +124,15 @@ describe("oop testing", function() {
                 }
             };
         });
-        (function() {
+        t.throws(function() {
             new Person('Tao Yuan', 0);
-        }).should.throw();
-        (function() {
+        });
+        t.throws(function() {
             new Person('Tao Yuan', 151);
-        }).should.throw();
-        (function() {
+        });
+        t.doesNotThrow(function() {
             new Person('Tao Yuan', 32);
-        }).should.not.throw();
+        });
     });
 
     it('define with mixins', function(){
@@ -158,14 +158,14 @@ describe("oop testing", function() {
         });
 
         var Bar = exo.define({
-            extend: Foo,
-            mixins: {
+            $extends: Foo,
+            $mixins: {
                 options: Options,
                 events: Events
             },
             setOptions: function(opts) {
                 this.config = opts;
-                this.mixins.options.setOptions.call(this, opts);
+                this.$mixins.options.setOptions.call(this, opts);
             }
         });
 
@@ -173,11 +173,11 @@ describe("oop testing", function() {
         var bar = new Bar("Bar");
         bar.setOptions("nothing");
 
-        bar.name.should.equal("Bar", "Invalid extend behavior, constructor must be bound correctly");
-        bar.opts.should.equal("nothing", "Invalid mixins behavior, constructor must be bound correctly");
-        bar.config.should.equal("nothing", "Invalid mixins behavior, constructor must be bound correctly");
-        bar.bind().should.be.ok;
-        bar.unbind().should.not.be.ok;
+        t.equal(bar.name, "Bar");
+        t.equal(bar.opts, "nothing");
+        t.equal(bar.config, "nothing");
+        t.ok(bar.bind());
+        t.notOk(bar.unbind());
     });
 
     it('define with inherits', function() {
@@ -203,21 +203,21 @@ describe("oop testing", function() {
         });
 
         var Bar = exo.define({
-            extend: Foo,
-            inherits: [Options, Events]
+            $extends: Foo,
+            $inherits: [Options, Events]
         });
 
 
         var bar = new Bar("Bar");
         bar.setOptions("nothing");
 
-        bar.name.should.equal("Bar", "Invalid extend behavior, constructor must be bound correctly");
-        bar.opts.should.equal("nothing", "Invalid mixins behavior, constructor must be bound correctly");
-        bar.bind().should.be.ok;
-        bar.unbind().should.not.be.ok;
+        t.equal(bar.name, "Bar");
+        t.equal(bar.opts, "nothing");
+        t.ok(bar.bind());
+        t.notOk(bar.unbind());
     });
 
-    it("mixins classes to a plain Class with exo.mixin", function(){
+    it("mixins classes to a plain Class with exo.mixins", function(){
         var Options = exo.define({
             setOptions: function(opts) {
                 this.opts = opts;
@@ -240,10 +240,10 @@ describe("oop testing", function() {
         });
 
         var Bar = exo.define({
-            extend: Foo,
+            $extends: Foo,
             setOptions: function(opts) {
                 this.config = opts;
-                this.mixins.options.setOptions.call(this, opts);
+                this.$mixins.options.setOptions.call(this, opts);
             }
         });
 
@@ -255,15 +255,15 @@ describe("oop testing", function() {
         var bar = new Bar("Bar");
         bar.setOptions("nothing");
 
-        bar.name.should.equal("Bar", "Invalid extend behavior, constructor must be bound correctly");
-        bar.opts.should.equal("nothing", "Invalid mixins behavior, constructor must be bound correctly");
-        bar.config.should.equal("nothing", "Invalid mixins behavior, constructor must be bound correctly");
-        bar.bind().should.be.ok;
-        bar.unbind().should.not.be.ok;
+        t.equal(bar.name, "Bar");
+        t.equal(bar.opts, "nothing");
+        t.equal(bar.config, "nothing");
+        t.ok(bar.bind());
+        t.notOk(bar.unbind());
     });
 
 
-    it("inherits classes to a plain Class with exo.inherit", function(){
+    it("inherits classes to a plain Class with exo.inherits", function(){
         var Options = exo.define({
             setOptions: function(opts) {
                 this.opts = opts;
@@ -286,7 +286,7 @@ describe("oop testing", function() {
         });
 
         var Bar = exo.define({
-            extend: Foo
+            $extends: Foo
         });
 
         exo.inherits(Bar, [Options, Events]);
@@ -294,10 +294,10 @@ describe("oop testing", function() {
         var bar = new Bar("Bar");
         bar.setOptions("nothing");
 
-        bar.name.should.equal("Bar", "Invalid extend behavior, constructor must be bound correctly");
-        bar.opts.should.equal("nothing", "Invalid mixins behavior, constructor must be bound correctly");
-        bar.bind().should.be.ok;
-        bar.unbind().should.not.be.ok;
+        t.equal(bar.name, "Bar");
+        t.equal(bar.opts, "nothing");
+        t.ok(bar.bind());
+        t.notOk(bar.unbind());
     });
 
     it("object property", function(){
@@ -309,12 +309,12 @@ describe("oop testing", function() {
         });
         var p1 = new Person();
         p1.addresses['home'] = 'home';
-        p1.addresses['home'].should.be.ok;
+        t.ok(p1.addresses['home']);
         var p2 = new Person();
         p2.addresses['company'] = 'company';
-        p1.addresses.should.not.eql(p2.addresses);
-        should.not.exist(p2.addresses['home']);
-        p2.addresses['company'].should.be.ok;
+        t.notDeepEqual(p1.addresses, p2.addresses);
+        t.notOk(p2.addresses['home']);
+        t.ok(p2.addresses['company']);
     });
 
 
@@ -324,13 +324,13 @@ describe("oop testing", function() {
         }
 
         var BeijingPerson = exo.define({
-            extend: Person,
+            $extends: Person,
             constructor: function() {
                 BeijingPerson.$superclass.call(this, 'Beijing');
             }
         });
 
-        (new BeijingPerson).name.should.equal('Beijing');
+        t.equal((new BeijingPerson).name, 'Beijing');
     });
 
     it("define subclass without constructor", function() {
@@ -339,19 +339,19 @@ describe("oop testing", function() {
         }
 
         var BeijingPerson = exo.define({
-            extend: Person,
+            $extends: Person,
             setName: function(name) {
                 this.name = name;
             }
         });
 
         var p = new BeijingPerson('Beijing');
-        p.name.should.equal('Beijing');
+        t.equal(p.name, 'Beijing');
     });
 
     it("exo closure", function() {
 
-        var OvyPerson2 = exo.extend(function() {
+        var ExoPerson2 = exo.extend(function() {
 
             return {
                 constructor:function (name) {
@@ -365,7 +365,7 @@ describe("oop testing", function() {
             }
         });
 
-        var OvyChinaGuy2 = exo.extend(OvyPerson2, function($super) {
+        var ExoChinaGuy2 = exo.extend(ExoPerson2, function($super) {
             return {
                 setAddress:function (city, street) {
                     $super.setAddress('China', city, street);
@@ -373,7 +373,7 @@ describe("oop testing", function() {
             }
         });
 
-        var OvyBeijingLover2 = exo.extend(OvyChinaGuy2, function ($super) {
+        var ExoBeijingLover2 = exo.extend(ExoChinaGuy2, function ($super) {
             return {
                 setAddress:function (street) {
                     $super.setAddress('Beijing', street);
@@ -381,12 +381,12 @@ describe("oop testing", function() {
             }
         });
 
-        var p = new OvyBeijingLover2("Mary");
+        var p = new ExoBeijingLover2("Mary");
         p.setAddress("CH");
 
-        p.name.should.equal("Mary");
-        p.country.should.equal("China");
-        p.city.should.equal("Beijing");
-        p.street.should.equal("CH");
+        t.equal(p.name, "Mary");
+        t.equal(p.country, "China");
+        t.equal(p.city, "Beijing");
+        t.equal(p.street, "CH");
     });
 });

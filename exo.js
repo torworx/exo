@@ -1,4 +1,4 @@
-;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (root) {
     var _exo,
         exo = require('../lib/exo');
@@ -23,9 +23,17 @@ var exo = {},
     AUTO_ID = 1000,
     objectPrototype = Object.prototype,
     toString = objectPrototype.toString,
-// CLASS_RESERVED_KEYS = {$classname: 1, mixinId: 1, $mixinId: 1, $super: 1, $superclass: 1},
-    CONFIG_RESERVED_KEYS = {extend: 1, constructor: 1, singleton: 1, statics: 1, mixins: 1, inherits: 1},
     TemplateClass = function () {};
+
+var CONFIG_RESERVED_KEYS_ARRAY = [
+        "constructor", "extend", "singleton", "statics", "mixins", "inherits",
+        "$extend", "$extends", "$singleton", "$statics", "$mixins", "$inherits"
+    ],
+    CONFIG_RESERVED_KEYS = {};
+
+CONFIG_RESERVED_KEYS_ARRAY.forEach(function (key) {
+    CONFIG_RESERVED_KEYS[key] = 1;
+});
 
 function getAutoId(prefiex) {
     return (prefiex ? prefiex.toString() : '') + (++AUTO_ID);
@@ -35,9 +43,9 @@ function isFunction(value) {
     return value && typeof value === 'function';
 }
 
-function isObject(value) {
-    return value && typeof value === 'object';
-}
+//function isObject(value) {
+//    return value && typeof value === 'object';
+//}
 
 function isString(value) {
     return typeof value === 'string';
@@ -99,13 +107,6 @@ function createProxy(fn, context) {
 
 exo.apply(exo, {
 
-    /**
-     * Clone simple variables including array, {}-like objects, DOM nodes and Date without keeping the old reference.
-     * A reference for the object itself is returned if it's not a direct decendant of Object.
-     *
-     * @param {Object} item The variable to clone
-     * @return {Object} clone
-     */
     clone: function (item) {
         var type,
             i,
@@ -145,47 +146,6 @@ exo.apply(exo, {
         return _clone || item;
     },
 
-    /**
-     * Merges any number of objects recursively without referencing them or their children.
-     *
-     *     var torworx = {
-     *         companyName: 'torworx',
-     *         products: ['exo', 'logair'],
-     *         isSuperCool: true,
-     *         office: {
-     *             size: 1,
-     *             location: 'SOHO',
-     *             isFun: true
-     *         }
-     *     };
-     *
-     *     var newStuff = {
-     *         companyName: 'Company Inc.',
-     *         products: ['exo', 'logair', 'ndo', 'midst', 'aiur'],
-     *         office: {
-     *             size: 10,
-     *             location: 'Beijing'
-     *         }
-     *     };
-     *
-     *     var company = exo.merge(torworx, newStuff);
-     *
-     *     // torworx and company then equals to
-     *     {
-     *         companyName: 'Company Inc.',
-     *         products: ['exo', 'logair', 'ndo', 'midst', 'aiur'],
-     *         isSuperCool: true,
-     *         office: {
-     *             size: 10,
-     *             location: 'Beijing',
-     *             isFun: true
-     *         }
-     *     }
-     *
-     * @param {Object} destination The object into which all subsequent objects are merged.
-     * @param {Object...} object Any number of objects to merge into the destination.
-     * @return {Object} merged The destination object with all passed objects merged in.
-     */
     merge: function (destination) {
         var i = 1,
             ln = arguments.length,
@@ -299,16 +259,6 @@ function makeCtor(parent) {
 
 exo.apply(exo, {
 
-    /**
-     * Returns a new object with the given object as the prototype chain. This method is
-     * designed to mimic the ECMA standard `Object.create` method and is assigned to that
-     * function when it is available.
-     *
-     * **NOTE** This method does not support the property definitions capability of the
-     * `Object.create` method. Only the first argument is supported.
-     *
-     * @param {Object} object The prototype chain for the new object.
-     */
     chain: function (object) {
         TemplateClass.prototype = object;
         var result = new TemplateClass();
@@ -316,99 +266,6 @@ exo.apply(exo, {
         return result;
     },
 
-
-    /**
-     * Defines a class or override. A basic class is defined like this:
-     *
-     *      exo.define('My.awesome.Class', {
-     *          someProperty: 'something',
-     *
-     *          someMethod: function(s) {
-     *              alert(s + this.someProperty);
-     *          }
-     *
-     *          ...
-     *      });
-     *
-     *      var obj = new My.awesome.Class();
-     *
-     *      obj.someMethod('Say '); // alerts 'Say something'
-     *
-     * To create an anonymous class, pass `null` for the `className`:
-     *
-     *      exo.define(null, {
-     *          constructor: function () {
-     *              // ...
-     *          }
-     *      });
-     *
-     * In some cases, it is helpful to create a nested scope to contain some private
-     * properties. The best way to do this is to pass a function instead of an object
-     * as the second parameter. This function will be called to produce the class
-     * body:
-     *
-     *      exo.define('MyApp.foo.Bar', function () {
-     *          var id = 0;
-     *
-     *          return {
-     *              nextId: function () {
-     *                  return ++id;
-     *              }
-     *          };
-     *      });
-     *
-     * _Note_ that when using override, the above syntax will not override successfully, because
-     * the passed function would need to be executed first to determine whether or not the result
-     * is an override or defining a new object. As such, an alternative syntax that immediately
-     * invokes the function can be used:
-     *
-     *      exo.define('MyApp.override.BaseOverride', function () {
-     *          var counter = 0;
-     *
-     *          return {
-     *              override: 'exo.Component',
-     *              logId: function () {
-     *                  console.log(++counter, this.id);
-     *              }
-     *          };
-     *      }());
-     *
-     *
-     * When using this form of `exo.define`, the function is passed a reference to its
-     * class. This can be used as an efficient way to access any static properties you
-     * may have:
-     *
-     *      exo.define('MyApp.foo.Bar', function (Bar) {
-     *          return {
-     *              statics: {
-     *                  staticMethod: function () {
-     *                      // ...
-     *                  }
-     *              },
-     *
-     *              method: function () {
-     *                  return Bar.staticMethod();
-     *              }
-     *          };
-     *      });
-     *
-     * @param {String|Object|Function|null} className The class name to create in string dot-namespaced format, for example:
-     * 'My.very.awesome.Class', 'FeedViewer.plugin.CoolPager'
-     * It is highly recommended to follow this simple convention:
-     *  - The root and the class name are 'CamelCased'
-     *  - Everything else is lower-cased
-     * Pass `null` to create an anonymous class.
-     * @param {Object|Function|?} data The key - value pairs of properties to apply to this class. Property names can be of any valid
-     * strings, except those in the reserved listed below:
-     *  - `extend`
-     *  - `mixins`
-     *  - `inherits`
-     *  - `singleton`
-     *  - `statics`
-     *
-     * @return {Object}
-     * @member exo
-     */
     define: function (className, data) {
         var hasClassName = isString(className);
         if (!data) {
@@ -421,24 +278,14 @@ exo.apply(exo, {
             data.$classname = null;
         }
 
-        var _extend = data.extend,
-            Parent;
-        if (_extend && !isObject(_extend)) {
-            Parent = _extend;
-        } else {
-            Parent = Base;
+        var parentClass = data.$extends || data.$extend || data.extend;
+        if (!isFunction(parentClass)) {
+            parentClass = Base;
         }
-        return exo.extend(Parent, data);
+        return exo.extend(parentClass, data);
     },
 
-
-    /**
-     * Same as `define`, but first argument should be the super class and ignore `extend` property in `data`.
-     * @param {Object|null} parentClass
-     * @param {Object} data
-     * @returns {Object}
-     */
-    extend: function(parentClass, data) {
+    extend: function (parentClass, data) {
         if (!data) {
             data = parentClass;
             parentClass = Base;
@@ -466,7 +313,7 @@ exo.apply(exo, {
 
         if (typeof body === 'object') {
             exo._extend(Clazz, body, prototype);
-            if (body.singleton) {
+            if (body.$singleton || body.singleton) {
                 Clazz = new Clazz();
             }
         }
@@ -476,9 +323,9 @@ exo.apply(exo, {
 
     _extend: function (targetClass, data, targetPrototype) {
         var prototype = targetPrototype || targetClass.prototype,
-            _statics = data.statics,
-            _mixins = data.mixins,
-            _inherits = data.inherits;
+            _statics = data.$statics || data.statics,
+            _mixins = data.$mixins || data.mixins,
+            _inherits = data.$inherits || data.inherits;
 
         if (_statics) {
             // copy static properties from statics to class
@@ -538,12 +385,12 @@ exo.apply(exo, {
             targetPrototype = targetClass.prototype;
         }
 
-        if (mixins instanceof Array) {
+        if (Array.isArray(mixins)) {
             for (i = 0, ln = mixins.length; i < ln; i++) {
                 item = mixins[i];
-                name = item.prototype.mixinId || item.$mixinId;
+                name = item.prototype.$mixinId || item.$mixinId;
                 if (!name) {
-                    name = item.$mixinId = getAutoId('mixin_');
+                    name = item.$mixinId = getAutoId('__mixin__');
                 }
 
                 exo._mixin(targetClass, name, item, targetPrototype);
@@ -564,26 +411,26 @@ exo.apply(exo, {
             key;
 
         if (name) {
-            if (!prototype.hasOwnProperty('mixins')) {
-                if ('mixins' in prototype) {
-                    prototype.mixins = exo.chain(prototype.mixins);
+            if (!prototype.hasOwnProperty('$mixins')) {
+                if ('$mixins' in prototype) {
+                    prototype.$mixins = exo.chain(prototype.$mixins);
                 }
                 else {
-                    prototype.mixins = {};
+                    prototype.$mixins = {};
                 }
             }
         }
 
         for (key in mixin) {
-            if (name && (key === 'mixins')) {
-                exo.merge(prototype.mixins, mixin[key]);
+            if (name && (key === '$mixins')) {
+                exo.merge(prototype.$mixins, mixin[key]);
             }
-            else if (typeof prototype[key] === 'undefined' && key !== 'mixinId') {
+            else if (typeof prototype[key] === 'undefined' && key !== '$mixinId') {
                 prototype[key] = mixin[key];
             }
         }
         if (name) {
-            prototype.mixins[name] = mixin;
+            prototype.$mixins[name] = mixin;
         }
     }
 });
