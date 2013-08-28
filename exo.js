@@ -46,7 +46,7 @@
             return exo;
         };
     }
-})(this);
+})(window);
 },{"../lib/exo":2}],2:[function(require,module,exports){
 "use strict";
 
