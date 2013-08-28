@@ -30,7 +30,7 @@
         for (i = 0, len = ns.length; i < len; i ++) {
             part = ns[i];
             if (part in ctx) ctx = ctx[part];
-            else throw new Error('Can not resolve class: ' + name);
+            else throw new Error('Can not resolve: ' + name);
         }
         return ctx;
     };
@@ -318,8 +318,8 @@ exo.apply(exo, {
         if (hasClassName && isFunction(exo.ns) && isFunction(exo.resolve)) {
             var ns, c;
             var i = className.lastIndexOf('.');
-            ns = i >= 0 ? className.substring(0, i - 1) : null;
-            c = i >= 0 ? className.substring(i) : className;
+            ns = i >= 0 ? className.substring(0, i) : null;
+            c = i >= 0 ? className.substring(i + 1) : className;
             if (ns) { exo.ns(ns); }
             exo.resolve(ns)[c] = cls;
         }
