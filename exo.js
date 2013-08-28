@@ -22,8 +22,9 @@
         }
     };
 
-    exo.resolveClass = function (name) {
-        var ns = (name || '').split('.');
+    exo.resolve = function (name) {
+        if (!name) return root;
+        var ns = String.prototype.split.call(name, '.');
         var ctx = root;
         var i, len, part;
         for (i = 0, len = ns.length; i < len; i ++) {
@@ -305,18 +306,25 @@ exo.apply(exo, {
 
         data.$classname = hasClassName ? className : undefined;
 
-        if (hasClassName && isFunction(exo.ns)) {
-            exo.ns(className);
-        }
-
         var parentClass = data.$extends || data.$extend || data.extend;
-        if (isString(parentClass) && isFunction(exo.resolveClass)) {
-            parentClass = exo.resolveClass(parentClass);
+        if (isString(parentClass) && isFunction(exo.resolve)) {
+            parentClass = exo.resolve(parentClass);
         }
         if (!isFunction(parentClass)) {
             parentClass = Base;
         }
-        return exo.extend(parentClass, data);
+        var cls = exo.extend(parentClass, data);
+
+        if (hasClassName && isFunction(exo.ns) && isFunction(exo.resolve)) {
+            var ns, c;
+            var i = className.lastIndexOf('.');
+            ns = i >= 0 ? className.substring(0, i - 1) : null;
+            c = i >= 0 ? className.substring(i) : className;
+            if (ns) { exo.ns(ns); }
+            exo.resolve(ns)[c] = cls;
+        }
+
+        return cls;
     },
 
     extend: function (parentClass, data) {

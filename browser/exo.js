@@ -21,8 +21,9 @@
         }
     };
 
-    exo.resolveClass = function (name) {
-        var ns = (name || '').split('.');
+    exo.resolve = function (name) {
+        if (!name) return root;
+        var ns = String.prototype.split.call(name, '.');
         var ctx = root;
         var i, len, part;
         for (i = 0, len = ns.length; i < len; i ++) {
