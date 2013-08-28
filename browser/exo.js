@@ -29,7 +29,7 @@
         for (i = 0, len = ns.length; i < len; i ++) {
             part = ns[i];
             if (part in ctx) ctx = ctx[part];
-            else throw new Error('Can not resolve class: ' + name);
+            else throw new Error('Can not resolve: ' + name);
         }
         return ctx;
     };
