@@ -45,4 +45,4 @@
             return exo;
         };
     }
-})(this);
+})(window);
