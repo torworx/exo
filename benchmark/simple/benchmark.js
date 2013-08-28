@@ -16,5 +16,4 @@ Object.keys(cases).forEach(function (key) {
     });
 });
 
-
 suite.run({ 'async': true });

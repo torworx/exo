@@ -55,6 +55,9 @@ describe("oop testing", function() {
             }
         });
 
+        t.ok(ExoBeijingLover.$superclass);
+        delete ExoBeijingLover.$superclass;
+        t.ok(ExoBeijingLover.$superclass);
 
         var p1 = new ExoPerson("Torry");
         p1.setAddress("CN", "BJ", "XY");
