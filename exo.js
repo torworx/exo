@@ -1,7 +1,38 @@
 ;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (root) {
-    var _exo,
-        exo = require('../lib/exo');
+    var _exo;
+    var exo = require('../lib/exo');
+
+    exo.ns = function() {
+        var ctx, i, len, ns, j, sublen, part;
+
+        for (i = 0, len = arguments.length; i < len; i++) {
+            ctx = root;
+            ns = arguments[i].split('.');
+
+            for (j = 0, sublen = ns.length; j < sublen; j++) {
+                part = ns[j];
+
+                if (!(part in ctx)) {
+                    ctx[part] = {};
+                }
+
+                ctx = ctx[part];
+            }
+        }
+    };
+
+    exo.resolveClass = function (name) {
+        var ns = (name || '').split('.');
+        var ctx = root;
+        var i, len, part;
+        for (i = 0, len = ns.length; i < len; i ++) {
+            part = ns[i];
+            if (part in ctx) ctx = ctx[part];
+            else throw new Error('Can not resolve class: ' + name);
+        }
+        return ctx;
+    };
 
     if ("function" === typeof root.define && root.define.amd) {
         define([], function () {
@@ -15,7 +46,7 @@
             return exo;
         };
     }
-})(window);
+})(this);
 },{"../lib/exo":2}],2:[function(require,module,exports){
 "use strict";
 
@@ -272,13 +303,16 @@ exo.apply(exo, {
             data = (hasClassName ? {} : className) || {};
         }
 
-        if (hasClassName) {
-            data.$classname = className;
-        } else {
-            data.$classname = null;
+        data.$classname = hasClassName ? className : undefined;
+
+        if (hasClassName && isFunction(exo.ns)) {
+            exo.ns(className);
         }
 
         var parentClass = data.$extends || data.$extend || data.extend;
+        if (isString(parentClass) && isFunction(exo.resolveClass)) {
+            parentClass = exo.resolveClass(parentClass);
+        }
         if (!isFunction(parentClass)) {
             parentClass = Base;
         }
@@ -434,7 +468,6 @@ exo.apply(exo, {
         }
     }
 });
-
 
 /* Initialization */
 module.exports = exports = exo;
