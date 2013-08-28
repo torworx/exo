@@ -392,7 +392,7 @@ exo.apply(exo, {
             targetPrototype = targetClass.prototype;
         }
 
-        if (inherits instanceof Array) {
+        if (Array.isArray(inherits)) {
             for (i = 0, ln = inherits.length; i < ln; i++) {
                 exo._mixin(targetClass, null, inherits[i], targetPrototype);
             }
