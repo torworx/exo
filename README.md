@@ -50,7 +50,7 @@ var aaron = new Person('Aaron');
 ### Class extention
 ```javascript
 var Developer = exo.define({
-    extend: 'Person',
+    $extends: 'Person',
     constructor: function() {
     	Developer.$superclass.call(this);
 	},
@@ -68,7 +68,7 @@ var CanSing = exo.define({
      }
 });
 var Musician = exo.define({
-     mixins: [CanSing]
+     $mixins: [CanSing]
 })
 ```
 In this case the Musician class will get a sing method from CanSing mixin.
@@ -76,7 +76,7 @@ In this case the Musician class will get a sing method from CanSing mixin.
 But what if the Musician already has a sing method? Or you want to mix in two classes, both of which define sing? In such a cases it's good to define mixins as an object, where you assign a name to each mixin:
 ```javascript
 var Musician = exo.define({
-     mixins: {
+     $mixins: {
          canSing: CanSing
      },
 
@@ -92,14 +92,14 @@ In this case the sing method of Musician will overwrite the mixed in sing method
 Like `mixins`, but `inherits` just copy all parent's own properties and methods to sub class, `inhertis` has higher performance than `mixins` but less features than `mixins`.
 ```javascript
 var Musician = exo.define({
-     inherits: [CanSing]
+     $inherits: [CanSing]
 })
 ```
 
 ### Singleton
 ```javascript
 var Logger = exo.define({
-    singleton: true,
+    $singleton: true,
     log: function(msg) {
         console.log(msg);
     }
@@ -113,7 +113,7 @@ When `singleton` config set to true, the class will be instantiated as singleton
 Static members can be defined using the `statics` config
 ```javascript
 var Computer = exo.define({
-    statics: {
+    $statics: {
         instanceCount: 0,
         factory: function(brand) {
             // 'this' in static methods refer to the class itself
