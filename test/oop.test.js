@@ -51,7 +51,7 @@ describe("oop testing", function() {
                 ExoBeijingLover.$superclass.call(this, name);
             },
             setAddress: function(street) {
-                ExoBeijingLover.$super.setAddress.call(this, 'Beijing', street);
+                ExoBeijingLover.$super.setAddress.call(this, 'BJ', street);
             }
         });
 
@@ -77,7 +77,7 @@ describe("oop testing", function() {
         p3.setAddress("XY");
         t.equal(p3.name, 'Mary');
         t.equal(p3.country, 'China');
-        t.equal(p3.city, 'Beijing');
+        t.equal(p3.city, 'BJ');
         t.equal(p3.street, 'XY');
 
         var instanceofTest = p3 instanceof ExoBeijingLover &&
@@ -329,11 +329,11 @@ describe("oop testing", function() {
         var BeijingPerson = exo.define({
             $extends: Person,
             constructor: function() {
-                BeijingPerson.$superclass.call(this, 'Beijing');
+                BeijingPerson.$superclass.call(this, 'BJ');
             }
         });
 
-        t.equal((new BeijingPerson).name, 'Beijing');
+        t.equal((new BeijingPerson).name, 'BJ');
     });
 
     it("define subclass without constructor", function() {
@@ -348,8 +348,8 @@ describe("oop testing", function() {
             }
         });
 
-        var p = new BeijingPerson('Beijing');
-        t.equal(p.name, 'Beijing');
+        var p = new BeijingPerson('BJ');
+        t.equal(p.name, 'BJ');
     });
 
     it("exo closure", function() {
@@ -379,7 +379,7 @@ describe("oop testing", function() {
         var ExoBeijingLover2 = exo.extend(ExoChinaGuy2, function ($super) {
             return {
                 setAddress:function (street) {
-                    $super.setAddress('Beijing', street);
+                    $super.setAddress('BJ', street);
                 }
             }
         });
@@ -389,7 +389,54 @@ describe("oop testing", function() {
 
         t.equal(p.name, "Mary");
         t.equal(p.country, "China");
-        t.equal(p.city, "Beijing");
+        t.equal(p.city, "BJ");
         t.equal(p.street, "CH");
+    });
+
+    it('overload', function () {
+        var Person = exo.define({
+            setAddress: exo.overload([
+                function (country, city, street) {
+                    this.country = country;
+                    this.city = city;
+                    this.street = street;
+                },
+                function (city, street) {
+                    this.setAddress('China', city, street);
+                },
+                function (street) {
+                    this.setAddress('BJ', street);
+                }
+            ])
+        });
+        var p = new Person;
+        p.setAddress('CH');
+        t.equal(p.country, "China");
+        t.equal(p.city, "BJ");
+        t.equal(p.street, "CH");
+        
+        p = new Person;
+        p.setAddress('SH', 'PD');
+        t.equal(p.country, "China");
+        t.equal(p.city, "SH");
+        t.equal(p.street, "PD");
+
+        p = new Person;
+        p.setAddress('French', 'Paris', 'KK');
+        t.equal(p.country, "French");
+        t.equal(p.city, "Paris");
+        t.equal(p.street, "KK");
+
+        p = new Person;
+        p.setAddress('French', 'Paris', 'KK', 'Extra');
+        t.equal(p.country, "French");
+        t.equal(p.city, "Paris");
+        t.equal(p.street, "KK");
+
+        p = new Person;
+        p.setAddress();
+        t.equal(p.country, "China");
+        t.equal(p.city, "BJ");
+        t.notOk(p.street);
     });
 });
