@@ -44,7 +44,7 @@ module.exports = function (grunt) {
     });
 
     // Default task.
-    grunt.registerTask('default', ['jshint', 'simplemocha', 'browserify:exo', 'uglify:min']);
+    grunt.registerTask('default', [/*'jshint',*/ 'simplemocha', 'browserify:exo', 'uglify:min']);
     grunt.loadNpmTasks('grunt-simple-mocha');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
